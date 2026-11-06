@@ -52,6 +52,21 @@ namespace Renamer
                 if (g.Count() > 1)
                     foreach (var it in g) if (it.Status == "") it.Status = "重名";
             }
+
+            // 父文件夹也在这一批里改名的，子项先跳过（路径会失效，不能同时改）
+            var movingDirs = items
+                .Where(x => x.IsDir && x.Changed && x.Status == "")
+                .Select(x => x.FullPath.TrimEnd('\\') + "\\")
+                .ToList();
+            if (movingDirs.Count > 0)
+            {
+                foreach (var it in items)
+                {
+                    if (it.Status != "") continue;
+                    if (movingDirs.Any(d => it.FullPath.StartsWith(d, StringComparison.OrdinalIgnoreCase)))
+                        it.Status = "父目录也在改名";
+                }
+            }
         }
 
         private static string Check(FileItem it)
