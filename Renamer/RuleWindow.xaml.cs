@@ -32,6 +32,7 @@ namespace Renamer
             BoxCase.Visibility = kind == RuleKind.Case ? Visibility.Visible : Visibility.Collapsed;
             BoxClean.Visibility = kind == RuleKind.Clean ? Visibility.Visible : Visibility.Collapsed;
             BoxExt.Visibility = kind == RuleKind.Ext ? Visibility.Visible : Visibility.Collapsed;
+            BoxStrip.Visibility = kind == RuleKind.Strip ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadUi(RuleKind kind)
@@ -61,6 +62,7 @@ namespace Renamer
                     NumStart.Text = _draft.Start.ToString();
                     NumStep.Text = _draft.Step.ToString();
                     NumDigits.Text = _draft.Digits.ToString();
+                    NumPrefix.Text = _draft.NumberPrefix;
                     NumAtBox.SelectedIndex = (int)_draft.NumAt;
                     NumPos.Text = _draft.Pos.ToString();
                     break;
@@ -81,6 +83,13 @@ namespace Renamer
                     break;
                 case RuleKind.Ext:
                     ExtBox.Text = _draft.NewExt;
+                    break;
+                case RuleKind.Strip:
+                    StripAsciiBox.IsChecked = _draft.StripAscii;
+                    StripDigitBox.IsChecked = _draft.StripDigit;
+                    StripSymbolBox.IsChecked = _draft.StripSymbol;
+                    StripSpaceBox.IsChecked = _draft.StripSpace;
+                    StripCjkBox.IsChecked = _draft.StripCjk;
                     break;
             }
         }
@@ -130,6 +139,7 @@ namespace Renamer
                     _draft.Start = I(NumStart.Text, 1);
                     _draft.Step = I(NumStep.Text, 1);
                     _draft.Digits = Math.Max(1, I(NumDigits.Text, 2));
+                    _draft.NumberPrefix = NumPrefix.Text ?? "";
                     _draft.NumAt = (InsertAt)Math.Max(0, NumAtBox.SelectedIndex);
                     _draft.Pos = I(NumPos.Text, 0);
                     _draft.ReplaceName = _draft.NumAt == InsertAt.ReplaceAll;
@@ -151,6 +161,13 @@ namespace Renamer
                     break;
                 case RuleKind.Ext:
                     _draft.NewExt = ExtBox.Text;
+                    break;
+                case RuleKind.Strip:
+                    _draft.StripAscii = StripAsciiBox.IsChecked == true;
+                    _draft.StripDigit = StripDigitBox.IsChecked == true;
+                    _draft.StripSymbol = StripSymbolBox.IsChecked == true;
+                    _draft.StripSpace = StripSpaceBox.IsChecked == true;
+                    _draft.StripCjk = StripCjkBox.IsChecked == true;
                     break;
             }
 

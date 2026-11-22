@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Renamer
 {
-    public enum RuleKind { Replace, Insert, Delete, Number, Date, Case, Clean, Ext }
+    public enum RuleKind { Replace, Insert, Delete, Number, Date, Case, Clean, Ext, Strip }
 
     public enum InsertAt { Start, End, AfterPos, ReplaceAll }
 
@@ -47,6 +47,14 @@ namespace Renamer
         public int Step { get; set; }
         public int Digits { get; set; }
         public bool ReplaceName { get; set; }
+        public string NumberPrefix { get; set; }
+
+        // 删字符（按类型）
+        public bool StripAscii { get; set; }
+        public bool StripDigit { get; set; }
+        public bool StripSymbol { get; set; }
+        public bool StripSpace { get; set; }
+        public bool StripCjk { get; set; }
 
         // 日期
         public DateSource DateFrom { get; set; }
@@ -109,6 +117,8 @@ namespace Renamer
                     r.Case = CaseMode.Lower; break;
                 case RuleKind.Ext:
                     r.NewExt = ""; break;
+                case RuleKind.Strip:
+                    r.StripAscii = true; r.StripDigit = true; break;
             }
             return r;
         }
@@ -127,6 +137,7 @@ namespace Renamer
                     case RuleKind.Case: return "大小写";
                     case RuleKind.Clean: return "清理字符";
                     case RuleKind.Ext: return "扩展名";
+                    case RuleKind.Strip: return "删字符";
                 }
                 return "规则";
             }
@@ -148,7 +159,18 @@ namespace Renamer
                             : "从第 " + From + " 个字符删 " + (Count == 0 ? "到末尾" : Count + " 个");
                     case RuleKind.Number:
                         return "序号 " + Start + " 起，步长 " + Step + "，" + Digits + " 位" +
+                               (string.IsNullOrEmpty(NumberPrefix) ? "" : "，前缀「" + NumberPrefix + "」") +
                                (ReplaceName ? "，替换整个名称" : "，" + AtText(NumAt, Pos));
+                    case RuleKind.Strip:
+                        {
+                            var sb = new StringBuilder("删掉");
+                            if (StripCjk) sb.Append("中文 ");
+                            if (StripAscii) sb.Append("英文 ");
+                            if (StripDigit) sb.Append("数字 ");
+                            if (StripSymbol) sb.Append("符号 ");
+                            if (StripSpace) sb.Append("空格 ");
+                            return sb.Length == 2 ? "没有勾选任何项" : sb.ToString().Trim();
+                        }
                     case RuleKind.Date:
                         return DateName + "，格式 " + DateFormat + "，" + AtText(DateAt, Pos);
                     case RuleKind.Case:
@@ -210,7 +232,8 @@ namespace Renamer
                 case RuleKind.Number:
                     {
                         long n = Start + (long)index * Step;
-                        string num = n.ToString().PadLeft(Math.Max(1, Digits), '0');
+                        string pre = NumberPrefix ?? "";
+                        string num = pre + n.ToString().PadLeft(Math.Max(1, Digits), '0');
                         if (ReplaceName) return num + ext;
                         return Put(stem, num, NumAt, Pos) + ext;
                     }
@@ -232,6 +255,9 @@ namespace Renamer
 
                 case RuleKind.Clean:
                     return Clean(stem) + ext;
+
+                case RuleKind.Strip:
+                    return Strip(stem) + ext;
 
                 case RuleKind.Ext:
                     {
@@ -299,6 +325,48 @@ namespace Renamer
             if (start >= s.Length) return s;
             int len = Count <= 0 ? s.Length - start : Math.Min(Count, s.Length - start);
             return s.Remove(start, len);
+        }
+
+        /// <summary>按字符类型删：中文 / 英文 / 数字 / 符号 / 空格</summary>
+        private string Strip(string s)
+        {
+            var sb = new StringBuilder(s.Length);
+            foreach (char c in s)
+            {
+                if (StripSpace && char.IsWhiteSpace(c)) continue;
+                if (StripAscii && IsLatinLetter(c)) continue;
+                if (StripDigit && IsDigitChar(c)) continue;
+                if (StripCjk && IsCjk(c)) continue;
+                if (StripSymbol && IsSymbolChar(c)) continue;
+                sb.Append(c);
+            }
+            string r = sb.ToString().Trim();
+            if (StripSpace) r = Regex.Replace(r, @"\s+", " ");
+            return r;
+        }
+
+        private static bool IsLatinLetter(char c)
+        {
+            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+                || (c >= '\uFF21' && c <= '\uFF3A')   // 全角 Ａ-Ｚ
+                || (c >= '\uFF41' && c <= '\uFF5A');  // 全角 ａ-ｚ
+        }
+
+        private static bool IsDigitChar(char c)
+        {
+            return (c >= '0' && c <= '9') || (c >= '\uFF10' && c <= '\uFF19');
+        }
+
+        private static bool IsCjk(char c)
+        {
+            return (c >= '\u4E00' && c <= '\u9FFF')
+                || (c >= '\u3400' && c <= '\u4DBF')
+                || (c >= '\uF900' && c <= '\uFAFF');
+        }
+
+        private static bool IsSymbolChar(char c)
+        {
+            return !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && !IsCjk(c);
         }
 
         private string Clean(string s)

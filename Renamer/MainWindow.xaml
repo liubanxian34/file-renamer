@@ -51,7 +51,7 @@
 
                             <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <ComboBox x:Name="KindBox" Width="132" SelectedIndex="0">
+                                    <ComboBox x:Name="KindBox" Width="150" SelectedIndex="0">
                                         <ComboBoxItem Content="查找替换" />
                                         <ComboBoxItem Content="插入文字" />
                                         <ComboBoxItem Content="删除 / 截取" />
@@ -60,6 +60,7 @@
                                         <ComboBoxItem Content="大小写" />
                                         <ComboBoxItem Content="清理字符" />
                                         <ComboBoxItem Content="扩展名" />
+                                        <ComboBoxItem Content="删字符类型" />
                                     </ComboBox>
                                     <Button Content="添加规则" Click="AddRule" Margin="6,0,0,0" />
                                 </StackPanel>

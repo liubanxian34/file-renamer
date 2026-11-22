@@ -80,6 +80,8 @@
                         <TextBox x:Name="NumDigits" Text="2" />
                     </StackPanel>
                 </Grid>
+                <TextBlock Text="前缀（可选，如「测试」→ 测试001）" Foreground="{StaticResource Sub}" Margin="0,0,0,4" />
+                <TextBox x:Name="NumPrefix" Margin="0,0,0,8" />
                 <ComboBox x:Name="NumAtBox" SelectedIndex="1" Margin="0,0,0,8">
                     <ComboBoxItem Content="加到开头" />
                     <ComboBoxItem Content="加到结尾" />
@@ -122,6 +124,18 @@
                 <CheckBox x:Name="BracketBox" Content="去掉括号及其内容（）、()、【】、[]" Margin="0,0,0,6" />
                 <CheckBox x:Name="SpecialBox" Content="去掉特殊符号（# $ % &amp; 等）" Margin="0,0,0,6" />
                 <CheckBox x:Name="WidthBox" Content="全角字符转半角" />
+            </StackPanel>
+
+            <!-- 删字符 -->
+            <StackPanel x:Name="BoxStrip" Visibility="Collapsed">
+                <TextBlock Text="勾上要删掉的字符类型（其它字符保留）" Foreground="{StaticResource Sub}" Margin="0,0,0,8" TextWrapping="Wrap" />
+                <CheckBox x:Name="StripAsciiBox" Content="英文字母（a-z、A-Z、全角）" Margin="0,0,0,6" />
+                <CheckBox x:Name="StripDigitBox" Content="数字（0-9）" Margin="0,0,0,6" />
+                <CheckBox x:Name="StripSymbolBox" Content="符号（- _ . # % 等）" Margin="0,0,0,6" />
+                <CheckBox x:Name="StripSpaceBox" Content="空格（含制表符）" Margin="0,0,0,6" />
+                <CheckBox x:Name="StripCjkBox" Content="中文汉字" Margin="0,0,0,6" />
+                <TextBlock Text="例：删英文+数字后「测试qwe123」→「测试」，再接一条「序号」规则就能排成 测试001、测试002"
+                           Foreground="{StaticResource Sub}" FontSize="11.5" TextWrapping="Wrap" Margin="0,8,0,0" />
             </StackPanel>
 
             <!-- 扩展名 -->
